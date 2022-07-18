@@ -1,0 +1,177 @@
+---
+title: "TIRAD"
+author: "kittipos sirivongrungson"
+date: '2022-07-18'
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+knitr::opts_chunk$set(eval = F)
+here::i_am("tirad.Rmd")
+library(here)
+library(dplyr)
+```
+
+## Resources
+
+- [TIRADS Original](https://www.acr.org/Clinical-Resources/Reporting-and-Data-Systems/TI-RADS)
+
+- [TIRADS-Calc by RadCalc](https://radcalculators.org/acr-tirads-calculator-for-thyroid-ultrasound/)
+
+## Design
+
+### Main Fn: `TIRADS_calc`
+
+**Output** (List): 
+
+-   Points
+-   TIRADS Level (+ descriptions)
+-   Recommendation
+
+### Secondary Fn: `get_TIRADS_points`
+
+**Output** (numeric): TIRADS Points 
+
+Function’s Parameter
+
+-   **composition** (chr): internal components of a nodule. 
+
+  -   `cystic`: cystic or almost completely cystic (0)
+  -   `spongiform`: microcystic component > 50% of the nodule volume (0)
+  -   `mixed`: (1)
+  -   `solid`: (2)
+
+-   **echogenicity** (chr): level of echogenicity of the solid part, relative to surrounding thyroid tissue.
+
+  -   `an` (0)
+  -   `hyper` (1)
+  -   `iso` (1)
+  -   `hypo` (2)
+  -   `very-hypo` (3)
+  
+  
+-   **shape** (chr): 
+
+  -   `wider` (0): wider-than-tall
+  -   `taller` (3): taller-than-wide
+  
+-   **margin** (chr):
+
+  -   `smooth` (0)
+  -   `ill-defined` (0)
+  -   `lobulated` (2)
+  -   `irregular` (2)
+  -   `extra` (3)
+  
+  
+-   **echogenic_foci** (Checkboxes)
+
+  -   `none` (0)
+  -   `comet` (0)
+  -   `macro-calc` (1)
+  -   `rim-calc` (2)
+  -   `punctate` (3)
+  
+  
+## Function: `get_TIRADS_points`
+
+
+```{r get_TIRADS_points}
+get_TIRADS_points <- function(
+    composition,
+    echogenicity,
+    shape,
+    margin,
+    echogenic_foci
+    ) {
+  
+  ## Match Args
+  
+  composition <- rlang::arg_match(
+    composition, c("cystic", "spongiform","mixed", "solid")
+    )
+  echogenicity <- rlang::arg_match(
+    echogenicity, c("an", "hyper", "iso", "hypo", "very-hypo")
+    )
+  shape <- rlang::arg_match(shape, c("wider", "taller"))
+  margin <- rlang::arg_match(
+    margin, c("smooth", "ill-defined", "lobulated", "irregular", "extra")
+    )
+  echogenic_foci <- rlang::arg_match(
+    echogenic_foci, values = c("none", "comet", "macro-calc", 
+                               "rim-calc", "punctate"),
+    multiple = TRUE # Can ≥ 1
+    ) 
+  
+  if(any(duplicated(echogenic_foci))) cli::cli_abort("Value of {.code echogenic_foci} can not be duplicated.")
+  
+  
+  pt <- vector("integer") # Init Empty Vector to Store
+  
+  pt["composition"] <- 
+    switch (composition,
+    "cystic" = 0L,
+    "spongiform" = 0L,
+    "mixed" = 1L,
+    "solid" = 2L
+  )
+  
+  pt["echogenicity"] <- 
+    switch (echogenicity,
+      "an" = 0L,
+      "hyper" = 1L,
+      "iso" = 1L,
+      "hypo" = 2L,
+      "very-hypo" = 3L
+    )
+  
+  pt["shape"] <- 
+    switch (shape,
+      "wider" = 0L,
+      "taller" = 3L
+    )
+  
+  pt["margin"] <- 
+    switch (margin,
+      "smooth" = 0L,
+      "ill-defined" = 0L,
+      "lobulated" = 2L,
+      "irregular" = 2L,
+      "extra" = 3L
+    )
+  
+  ## Echogenic Foci (Multi-select)
+  foci <- c("none" = 0L, "comet" = 0L, "macro-calc" = 1L, 
+            "rim-calc" = 2L, "punctate" = 3L)
+  
+  pt["echogenic_foci"] <- sum(foci[echogenic_foci])
+  
+  ## Combine Output
+  list(points = pt,
+       args = list(composition = composition,
+                   echogenicity = echogenicity,
+                   shape = shape,
+                   margin = margin,
+                   echogenic_foci = echogenic_foci)
+       )
+}
+
+get_TIRADS_points("mixed", "iso", "taller", "smooth", 
+                  c("none", "macro-calc"))
+```
+
+
+
+
+```{r}
+x <- c(a = 1, b = 2, "c-1"=5)
+
+x[c("a", "c-1")]
+
+any(duplicated(c("a", "a")))
+```
+
+
+
+
+
