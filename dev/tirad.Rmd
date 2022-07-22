@@ -28,9 +28,11 @@ library(dplyr)
 -   TIRADS Level (+ descriptions)
 -   Recommendation
 
+
+
 ### Secondary Fn: `get_TIRADS_points`
 
-**Output** (numeric): TIRADS Points 
+**Output** (list): `$points`: TIRADS Points, `$categories`: selected categories.
 
 Function’s Parameter
 
@@ -71,9 +73,86 @@ Function’s Parameter
   -   `macro-calc` (1)
   -   `rim-calc` (2)
   -   `punctate` (3)
+
+
+
+## Main: `TIRADS_calc`
+
+```{r TIRADS_calc}
+TIRADS_calc <- function(    
+    composition,
+    echogenicity,
+    shape,
+    margin,
+    echogenic_foci,
+    size_cm = NA
+    ) {
   
+  pt_ls <- get_TIRADS_points(
+    composition, echogenicity,
+    shape, margin, echogenic_foci
+  )
   
-## Function: `get_TIRADS_points`
+  tot_points <- sum(pt_ls[["points"]])
+  
+  lv <- if (tot_points >= 7L) {
+    tirads_lvs[5]
+  } else if(tot_points >= 4L) {
+    tirads_lvs[4]
+  } else if(tot_points == 0L){
+    tirads_lvs[1]
+  } else {
+    tirads_lvs[tot_points]
+  }
+  ## FNA ?
+  should_FNA <- any(
+    c(tot_points == 3L & size_cm >= 2.5),
+    c(tot_points >= 4L & tot_points <= 6L & size_cm >= 1.5),
+    c(tot_points >= 7L & size_cm >= 1L)
+  )
+  
+  ## Follow-up ?
+  should_follow <- any(
+    c(tot_points == 3L & size_cm >= 1.5),
+    c(tot_points >= 4L & tot_points <= 6L & size_cm >= 1L),
+    c(tot_points >= 7L & size_cm >= 0.5)
+  )
+  
+  out <- list(
+    level = lv,
+    tot_points = tot_points,
+    should_FNA = should_FNA,
+    should_follow = should_follow
+  )
+  
+  # Add "TIRADS_report" class
+  new_TIRADS_report(out)
+  
+}
+
+TIRADS_calc("mixed", "an", "taller", "ill-defined", 
+            c("none", "macro-calc"), size_cm = 2)
+```
+
+
+
+
+  
+## Lookup Table
+
+```{r tirads_lvs}
+tirads_lvs <- c("TR1" = "Benign", 
+                "TR2" = "Not Suspicious", 
+                "TR3" = "Mildly Suspicious",
+                "TR4" = "Moderately Suspicious", 
+                "TR5" = "Highly Suspicious")
+
+tirads_lvs[2L]
+```
+
+
+  
+## Helper: `get_TIRADS_points`
 
 
 ```{r get_TIRADS_points}
@@ -147,16 +226,19 @@ get_TIRADS_points <- function(
   pt["echogenic_foci"] <- sum(foci[echogenic_foci])
   
   ## Combine Output
-  list(points = pt,
-       args = list(composition = composition,
-                   echogenicity = echogenicity,
-                   shape = shape,
-                   margin = margin,
-                   echogenic_foci = echogenic_foci)
-       )
+  list(
+    points = pt,
+    categories = list(
+      composition = composition,
+      echogenicity = echogenicity,
+      shape = shape,
+      margin = margin,
+      echogenic_foci = echogenic_foci
+    )
+  )
 }
 
-get_TIRADS_points("mixed", "iso", "taller", "smooth", 
+get_TIRADS_points("mixed", "an", "taller", "smooth", 
                   c("none", "macro-calc"))
 ```
 
