@@ -1,0 +1,31 @@
+---
+title: "OOP"
+author: "kittipos sirivongrungson"
+date: '2022-07-22'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+here::i_am("dev/oop.Rmd")
+library(here)
+
+```
+
+
+## Class: `TIRADS_report`
+
+### New: `TIRADS_report`
+
+```{r new_TIRADS_report}
+new_TIRADS_report <- function(x = list()) {
+  
+  stopifnot(inherits(x, "list"))
+  class(x) <- c("TIRADS_report", class(x))
+  x
+  
+}
+
+new_TIRADS_report(list(a = "A"))
+```
+
