@@ -12,6 +12,16 @@ library(here)
 library(dplyr)
 ```
 
+```{r}
+usethis::use_r("tirads")
+```
+
+```{r}
+radcalc::TIRADS_calc("mixed", "an", "taller", "ill-defined", 
+            c("none", "macro-calc"), size_cm = 2)
+```
+
+
 ## Resources
 
 - [TIRADS Original](https://www.acr.org/Clinical-Resources/Reporting-and-Data-Systems/TI-RADS)
@@ -94,6 +104,12 @@ TIRADS_calc <- function(
   )
   
   tot_points <- sum(pt_ls[["points"]])
+  
+  tirads_lvs <- c("TR1" = "Benign", 
+                "TR2" = "Not Suspicious", 
+                "TR3" = "Mildly Suspicious",
+                "TR4" = "Moderately Suspicious", 
+                "TR5" = "Highly Suspicious")
   
   lv <- if (tot_points >= 7L) {
     tirads_lvs[5]
