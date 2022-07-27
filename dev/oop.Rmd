@@ -13,6 +13,12 @@ library(here)
 ```
 
 
+```{r}
+usethis::use_r("s3")
+```
+
+
+
 ## Class: `TIRADS_report`
 
 ### New: `TIRADS_report`
