@@ -22,6 +22,7 @@
 #' @return A list with "TIRADS_report" class containing:
 #' * \strong{level}: (Character) A TIRADS category level.
 #' * \strong{tot_points}: (Numeric) A total TIRADS score.
+#' * \strong{points}: (Numeric) TIRADS scores for each categories.
 #' * \strong{should_FNA}: (Logical) `TRUE` if FNA is suggested.
 #' * \strong{should_follow}: (Logical) `TRUE` if follow-up is suggested.
 #'
@@ -79,6 +80,7 @@ TIRADS_calc <- function(
   out <- list(
     level = lv,
     tot_points = tot_points,
+    points = pt_ls[["points"]],
     should_FNA = should_FNA,
     should_follow = should_follow
   )

@@ -19,6 +19,7 @@ usethis::use_r("tirads")
 ```{r}
 radcalc::TIRADS_calc("mixed", "an", "taller", "ill-defined", 
             c("none", "macro-calc"), size_cm = 2)
+
 ```
 
 
@@ -137,6 +138,7 @@ TIRADS_calc <- function(
   out <- list(
     level = lv,
     tot_points = tot_points,
+    points = pt_ls[["points"]],
     should_FNA = should_FNA,
     should_follow = should_follow
   )
